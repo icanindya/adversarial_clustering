@@ -19,10 +19,12 @@ public class Optimizer {
 	double[][] projCenters, transMat;
 	Random rd = new Random();
 	
-	double sqDist = -1;
+	int closestClusterIndex = -1;
+	double closestClusterSqDist = -1;
 	int attempt = 0, success = 0;
-	PrintWriter pw;
+	PrintWriter pw, pwTime;
 	String optiLogFile = "E:/Data/KDD99/opti_log";
+	String timeLogFile = "E:/Data/KDD99/time_log";
 
 	public Optimizer(double[][] transMat, double[][] projCenters,
 			double distThres, double[] attrChangeThres) {
@@ -34,14 +36,16 @@ public class Optimizer {
 		
 		try {
 			pw = new PrintWriter(new FileWriter(optiLogFile), true);
+			pwTime = new PrintWriter(new FileWriter(timeLogFile), true);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 	}
 	
-	public void setSqDist(double sqDist){
-		this.sqDist = sqDist;
+	public void setClosestClusterInfo(int index, double sqDist){
+		this.closestClusterIndex = index;
+		this.closestClusterSqDist = sqDist;
 	}
 
 	public boolean optimize(double[] origX, double[] projX) {
@@ -72,7 +76,7 @@ public class Optimizer {
 		for (int k = 0; k < K; k++) {
 			try {
 				// define new model
-
+				
 				cplex = new IloCplex();
 				cplex.setOut(null);
 
@@ -96,7 +100,7 @@ public class Optimizer {
 
 				objective = cplex.sum(numExprs);
 				cplex.addMinimize(objective);
-
+				
 				// constraints
 				// constraint 1
 				IloNumExpr numExprs2[] = new IloNumExpr[M];
@@ -108,34 +112,26 @@ public class Optimizer {
 					}
 					numExprs2[j] = cplex.square(cplex.diff(numExpr, projCenters[k][j]));
 				}
-
+				
 				cplex.addLe(cplex.sum(numExprs2), Math.pow(distThres, 2));
-
+				
 				// constraint 2
 				for (int i = 0; i < N; i++) {
-//					cplex.addLe(cplex.square(cplex.diff(origXp[i], origX[i])), Math.pow(attrChangeThres[i], 2));
-					cplex.addLe(cplex.square(cplex.diff(origXp[i], origX[i])), Math.pow(0.3, 2));
+//					long start = System.currentTimeMillis();
+					cplex.addLe(cplex.square(cplex.diff(origXp[i], origX[i])), Math.pow(attrChangeThres[i], 2));
+//					long end = System.currentTimeMillis();
+//					System.out.println(String.format("Time required: %d", end - start));
+//					pwTime.println(String.format("%d", end - start));
 				}
 
-//				System.out.println("\nCluster " + k + ": \n");
-//				String.format("Target projected cluster: %s\n", Arrays.toString(projCenters[k]));
-//				String.format("Attack projected point: %s\n", Arrays.toString(projX));
-
 				if (cplex.solve()) {
-//					String.format("\nObjective value: %f\n", cplex.getObjValue());
-//					String.format("Attack point: %s\n", Arrays.toString(origX));
-//					String.format("Modified attack point: %s\n", Arrays.toString(cplex.getValues(origXp)));
-
 					if (cplex.getObjValue() < currObjVal) {
 						currCluster = k;
 						currObjVal = cplex.getObjValue();
 						currOrigXp = cplex.getValues(origXp);
 					}
-
-				} else {
-//					String.format("\nCouldn't solve the problem for cluster %d.\n", k);
 				}
-
+				
 			} catch (Exception e) {
 				System.out.println(e.toString());
 			}
@@ -143,13 +139,13 @@ public class Optimizer {
 				if(cplex != null) cplex.end();
 			}
 		}
-
-		System.out.println(String.format("\nSquared distance: %f", sqDist));
-		pw.println(String.format("\nSquared distance: %f", sqDist));
+		System.out.println(String.format("Closest cluster %d, squared distance: %f", closestClusterIndex, closestClusterSqDist));
+		pw.println(String.format("Closest cluster %d, squared distance: %f", closestClusterIndex, closestClusterSqDist));
 		System.out.println(String.format("Attack point: %s", Arrays.toString(origX)));
 		pw.println(String.format("Attack point: %s", Arrays.toString(origX)));
 		System.out.println(String.format("Projected attack point: %s", Arrays.toString(projX)));
 		pw.println(String.format("Projected attack point: %s", Arrays.toString(projX)));
+		
 		
 		Boolean ret = false;
 		
@@ -173,9 +169,14 @@ public class Optimizer {
 		
 		System.out.println(String.format("Attempt: %d, Success: %d, Rate: %.2f%%", attempt, success, (success * 100.0)/attempt));
 		pw.println(String.format("Attempt: %d, Success: %d, Rate: %.2f%%", attempt, success, (success * 100.0)/attempt));
+		System.out.println();
+		pw.println();
 		
 		pw.flush();
 		pw.close();
+		
+		pwTime.flush();
+		pwTime.close();
 		
 		return ret;
 	}

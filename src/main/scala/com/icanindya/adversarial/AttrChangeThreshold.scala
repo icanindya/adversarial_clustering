@@ -52,14 +52,14 @@ object AttrChangeThreshold {
       if (attType == "con") {
         domain = domain.substring(1, domain.length() - 2);
         val extremeVals = domain.split("-").map(_.trim().toDouble)
-        changeThreshold = (extremeVals(1) - extremeVals(0)) * 0.3
+        changeThreshold = (extremeVals(1) - extremeVals(0)) * 0.5
 
         if (i == 0) attrChangeThresholds(i) = changeThreshold
         else {
           attrChangeThresholds(i + 1 + 3 + 66 + 11 - 4) = changeThreshold
         }
       }
-      attrChangeThresholds(i) = 1.0
+//      attrChangeThresholds(i) = 1.0
     }
     return attrChangeThresholds
   }

@@ -1,6 +1,6 @@
 package com.icanindya.adversarial
 
-class clusTestInfo{
+class ClusTestInfo extends Serializable{
     var minSqDist = Double.MaxValue;
     var maxSqDist = Double.MinValue;
     var numAssocTestPoints = 0L;

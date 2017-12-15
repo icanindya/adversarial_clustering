@@ -21,10 +21,10 @@ import java.io.FileWriter
 
 object AttributeInfo {
 
-  val attributesFile = Constants.attrFile
+  val attributesFile = ""
   val attributesInfoFile = "E:/Data/KDD99/attInfo"
-  val trainDataFile = Constants.trainFile
-  val testDataFile = Constants.testFile
+  val trainDataFile = ""
+  val testDataFile = ""
   
   val numFeatures = 41
 

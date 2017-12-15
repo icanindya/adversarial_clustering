@@ -1,7 +1,6 @@
 package com.icanindya.adversarial
 
 import org.apache.spark.mllib.tree.RandomForest
-import com.icanindya.adversarial.Spark
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.rdd.RDD
@@ -52,7 +51,6 @@ object Classifiers {
     val predictionAndLabel = testData.map {
       case LabeledPoint(label, features) =>
         val prediction = model.predict(features)
-//        println("prediction: " + prediction + " label: " + label)
         (prediction, label)
     }
 
@@ -146,7 +144,7 @@ object Classifiers {
     
     // specify layers for the neural network:
     // input layer of size 4 (features), two intermediate of size 5 and 4
-    // and output of size 3 (classes)
+    // and output of size 2(classes)
     val layers = Array[Int](numFeatures, 5, 4, 2)
 
     // create the trainer and set its parameters
@@ -168,8 +166,6 @@ object Classifiers {
     }.rdd
   }
 
-  //  val accuracy = 1.0 * predictionAndLabel.filter(x => x._1 == x._2).count() / testData.count()
-  //    println("Decision Tree accuracy: " + accuracy)
   def printMetrics(predictionAndLabels: RDD[(Double, Double)], classifier: String) {
     val positives = predictionAndLabels.filter(_._2 == 1.0)
     val negatives = predictionAndLabels.filter(_._2 == 0.0)

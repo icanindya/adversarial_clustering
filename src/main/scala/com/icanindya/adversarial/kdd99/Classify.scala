@@ -28,10 +28,10 @@ object Classify {
 
     var predictionAndLabels: RDD[(Double, Double)] = null
     
-    
-    
     predictionAndLabels = Classifiers.randomForest(trainingData, testData)
     Classifiers.printMetrics(predictionAndLabels, "Random Forest")
+    predictionAndLabels = Classifiers.decisionTree(trainingData, testData)
+    Classifiers.printMetrics(predictionAndLabels, "Decision Tree")
     predictionAndLabels = Classifiers.naiveBayes(trainingData, testData)
     Classifiers.printMetrics(predictionAndLabels, "Naive Bayes")
     predictionAndLabels = Classifiers.logisticRegression(trainingData, testData)

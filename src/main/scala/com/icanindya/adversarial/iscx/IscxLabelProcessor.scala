@@ -5,9 +5,9 @@ import com.icanindya.adversarial.Spark
 
 object IscxLabelProcessor {
 
-  val IN_LABEL_FILE_PATH = "E:/Data/ISCX IDS/labeled_flows_xml/TestbedThuJun17-3Flows.xml"
+  val IN_LABEL_FILE_PATH = "E:/Data/ISCX_IDS/labeled_flows_xml/TestbedThuJun17-3Flows.xml"
   val ROW_TAG = "TestbedThuJun17-3Flows"
-  val OUT_LABEL_FILE_PATH = "E:/Data/ISCX IDS/labels"
+  val OUT_LABEL_FILE_PATH = "E:/Data/ISCX_IDS/labels"
   
   val protocolToNum = Map("tcp_ip" -> "6", "udp_ip" -> "17", "icmp_ip" -> "1", "igmp" -> "2")
 

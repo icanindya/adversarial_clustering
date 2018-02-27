@@ -24,12 +24,10 @@ import scala.reflect.io.Path
 object Test {
   def main(args: Array[String]): Unit = {
 
-    System.setProperty("hadoop.home.dir", "C:/hadoop241/");
-
-    val conf = new SparkConf().setAppName("adversarial").setMaster("local")
-    conf.set("spark.hadoop.validateOutputSpecs", "false")
-    conf.set("spark.executor.memory", "10g")
-    val sc = new SparkContext(conf)
-    sc.setLogLevel("ERROR")
+    val sc = Spark.getContext()
+    val pws = Map("Apache Spark" -> "http://spark.apache.org/", "Scala" -> "http://www.scala-lang.org/")
+    
+    println(sc.parallelize(Seq("Apache Spark", "Scala")).map(pws(_)).collect.mkString(","))
+    
   }
 }

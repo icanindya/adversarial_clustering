@@ -14,12 +14,16 @@ object AdvUtil{
     new DenseVector(projPoint.toArray);
   }
   
-  def getProjPointsAndPcMatrix(originalPoints: RDD[Vector], numPc: Int): (RDD[Vector], DenseMatrix) = {
-    var featureMatrix = new RowMatrix(originalPoints)
+  def getPcMatrix(originalPoints: RDD[Vector], numPc: Int): DenseMatrix = {
     val pcaModel = new PCA(numPc).fit(originalPoints)
     var pcMatrix = pcaModel.pc
-    val projPoints = featureMatrix.multiply(pcMatrix).rows
-    (projPoints, pcMatrix)
+    pcMatrix
+  }
+  
+  def getProjPoints(originalPoints: RDD[Vector], pcMatrix: DenseMatrix): RDD[Vector] = {
+     var featureMatrix = new RowMatrix(originalPoints)
+     val projPoints = featureMatrix.multiply(pcMatrix).rows
+     projPoints
   }
   
   def pcToArr(pcMatrix: Matrix): Array[Array[Double]] = {

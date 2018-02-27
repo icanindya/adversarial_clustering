@@ -7,8 +7,8 @@ import java.util.TimeZone
 
 object FeatureProcessor {
 
-  val FLOW_FEATURES_FILE = "E:/Data/ISCX IDS/flowtbag/features_%d.ftb" //.format(int)
-  val MODIFIED_FLOW_FEATURES_FILE = "E:/Data/ISCX IDS/flowtbag/features_%d/" //.format(int)
+  val FLOW_FEATURES_FILE = "E:/Data/ISCX_IDS/flowtbag/features_%d.ftb" //.format(int)
+  val MODIFIED_FLOW_FEATURES_FILE = "E:/Data/ISCX_IDS/flowtbag/features_%d/" //.format(int)
 
   def main(args: Array[String]): Unit = {
 

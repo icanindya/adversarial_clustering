@@ -1,4 +1,4 @@
-package com.icanindya.adversarial.kdd99
+package com.icanindya.adversarial.pdf
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._

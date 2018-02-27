@@ -6,6 +6,7 @@ import org.apache.commons.math3.geometry.Space
 import com.icanindya.adversarial.Spark
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.SparkContext
+import com.icanindya.adversarial.AdvUtil
 
 object FinalDataset {
 
@@ -14,12 +15,16 @@ object FinalDataset {
 
   val finalTrainFile = "D:/Data/KDD99/final/train"
   val finalTestFile = "D:/Data/KDD99/final/test"
+  val finalValidationFile = "D:/Data/KDD99/final/validation"
+  
+  val randomTestSamplesFile = "D:/Data/KDD99/final/random_test_%d"
+  
+  val trainSize = 350000
+  val validationEachSize = 10000
 
   def main(args: Array[String]) {
     val sc = Spark.getContext()
-    getFinalDatasetStat(sc)
-    
-
+    saveFinalDatasets(sc)
   }
   
   def saveFinalDatasets(sc: SparkContext){
@@ -33,16 +38,25 @@ object FinalDataset {
        x.split(",", -1).map(v => "%.5f".format(v.toDouble)).mkString(",")
     }
     .distinct
-    shrinkedData.cache() 
+    shrinkedData.cache()
+    
+    val benValidationData = sc.parallelize(shrinkedData.filter(_.endsWith("0.00000")).takeSample(false, validationEachSize, 123456))
+    val malValidationData = sc.parallelize(shrinkedData.filter(_.endsWith("1.00000")).takeSample(false, validationEachSize, 123456))
+    val validationData = benValidationData.union(malValidationData)
+    
+    val trainAndTestData = shrinkedData.subtract(validationData)
+    trainAndTestData.cache()
+    
+    val benTrainAndTestData = trainAndTestData.filter(_.endsWith("0.00000"))
+    benTrainAndTestData.cache()
+    
+    val trainData = benTrainAndTestData.sample(false, trainSize.toDouble/benTrainAndTestData.count, 123456)    
+    val testData = trainAndTestData.subtract(trainData)
 
-    val trainData = shrinkedData.sample(false, 0.5, 123456)
-    trainData.cache()
-    
-    val testData = shrinkedData.subtract(trainData)
-    testData.cache()
-    
     trainData.coalesce(1).saveAsTextFile(finalTrainFile)
+    validationData.coalesce(1).saveAsTextFile(finalValidationFile)   
     testData.coalesce(1).saveAsTextFile(finalTestFile)
+   
   }
 
   def fixCategoricalFeatures(data: RDD[String]): RDD[String] = {
@@ -107,20 +121,31 @@ object FinalDataset {
     scaledLine
   }
   
-  def getFinalDatasetStat(sc: SparkContext){
-    val trainLabels = sc.textFile(finalTrainFile).map(_.split(",", -1).map(_.toDouble).last)
+  def getFinalDatasetStat(sc: SparkContext, trainFile: String, testFile: String){
+    val trainLabels = sc.textFile(trainFile).map(_.split(",", -1).map(_.toDouble).last)
     trainLabels.cache
-    val trainBenignCount = trainLabels.filter { _ == 0.0 }.count
-    val trainMaliciousCount = trainLabels.filter { _ == 1.0 }.count
+    val benTrainCount = trainLabels.filter { _ == 0.0 }.count
+    val malTrainCount = trainLabels.filter { _ == 1.0 }.count
     
-    val testLabels = sc.textFile(finalTestFile).map(_.split(",", -1).map(_.toDouble).last)
+    val validationLabels = sc.textFile(finalValidationFile).map(_.split(",", -1).map(_.toDouble).last)
+    validationLabels.cache
+    val benValidationCount = validationLabels.filter { _ == 0.0 }.count
+    val malValidationCount = validationLabels.filter { _ == 1.0 }.count
+    
+    val testLabels = sc.textFile(testFile).map(_.split(",", -1).map(_.toDouble).last)
     testLabels.cache
-    val testBenignCount = testLabels.filter { _ == 0.0 }.count
-    val testMaliciousCount = testLabels.filter { _ == 1.0 }.count
+    val benTestCount = testLabels.filter { _ == 0.0 }.count
+    val malTestCount = testLabels.filter { _ == 1.0 }.count
     
-    println(trainBenignCount, trainMaliciousCount)
-    println(testBenignCount, testMaliciousCount)
-    
+    println("train: ben = %d, mal = %d".format(benTrainCount, malTrainCount))
+    println("validation: ben = %d, mal = %d".format(benValidationCount, malValidationCount))
+    println("test: ben = %d, mal = %d".format(benTestCount, malTestCount))
+  }
+  
+  def saveRandomTestSamples(sc: SparkContext, sampleSize: Int){
+    val testRdd = sc.textFile(finalTestFile)
+    testRdd.cache
+    sc.parallelize(testRdd.takeSample(false, sampleSize, 123456)).coalesce(1).saveAsTextFile(randomTestSamplesFile.format(sampleSize))
     
   }
 

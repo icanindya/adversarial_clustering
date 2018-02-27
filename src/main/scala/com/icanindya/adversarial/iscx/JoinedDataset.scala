@@ -7,10 +7,10 @@ import java.util.Date
 
 object JoinedDataset {
 
-  val FLOW_FEATURES_FILE = "D:/Data/ISCX IDS/flowtbag/features_%d" //.format(int)
-  val LABEL_FILE = "D:/Data/ISCX IDS/processed_labels/labels_%d.txt" //.format(int)
+  val FLOW_FEATURES_FILE = "D:/Data/ISCX_IDS/flowtbag/features_%d" //.format(int)
+  val LABEL_FILE = "D:/Data/ISCX_IDS/processed_labels/labels_%d.txt" //.format(int)
   
-  val JOINED_DS_FILE = "D:/Data/ISCX IDS/joined/%d" //.format(int)
+  val JOINED_DS_FILE = "D:/Data/ISCX_IDS/joined/%d" //.format(int)
   val COMMA = ","
   
   val fStartInd = 7

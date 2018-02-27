@@ -67,7 +67,7 @@ public class CplexOptimizer {
 			
 			// constraint 2
 			for (int i = 0; i < N; i++) {
-				cplex.addLe(cplex.square(cplex.diff(origXp[i], origX[i])), Math.pow(origX[i] * attrChangeThres[i], 2));
+				cplex.addLe(cplex.square(cplex.diff(origXp[i], origX[i])), Math.pow(attrChangeThres[i], 2));
 			}
 
 			if (cplex.solve()) {
@@ -137,7 +137,7 @@ public static CplexSolution softOptimize(double[] origX, double[] projX, double[
 			
 			// constraint 2
 			for (int i = 0; i < N; i++) {
-				cplex.addLe(cplex.square(cplex.diff(origXp[i], origX[i])), Math.pow(origX[i] * attrChangeThres[i], 2));
+				cplex.addLe(cplex.square(cplex.diff(origXp[i], origX[i])), Math.pow(attrChangeThres[i], 2));
 			}
 
 			if (cplex.solve()) {

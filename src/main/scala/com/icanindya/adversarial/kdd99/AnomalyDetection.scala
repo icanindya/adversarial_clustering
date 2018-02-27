@@ -33,11 +33,11 @@ import com.icanindya.adversarial.CplexSolution
 object AnomalyDetection {
 
   val kmModelDir = "D:/Data/KDD99/model/kmeans/%d"
-  val kmModelClusterFile = kmModelDir + "/clsuters.txt"
+  val kmModelClusterStatFile = kmModelDir + "/clsuters.txt"
   val bkmModelDir = "D:/Data/KDD99/model/bkmeans/%d"
-  val bkmModelClusterFile = bkmModelDir + "/clsuters.txt"
+  val bkmModelClusterStatFile = bkmModelDir + "/clsuters.txt"
   val gmModelDir = "D:/Data/KDD99/model/gm/%d"
-  val gmModelClusterFile = gmModelDir + "/clsuters.txt"
+  val gmModelClusterStatFile = gmModelDir + "/clsuters.txt"
 
   val pcFile = "D:/Data/KDD99/model/pc/%d"
   
@@ -68,8 +68,8 @@ object AnomalyDetection {
 
     labeledPointTestRdd.cache
     
-    gmAnomalyDetectionResult(sc, labeledPointTestRdd, 24, 30)
-
+//    gmAnomalyDetectionResult(sc, labeledPointTestRdd, 24, 30)
+    
   }
 
   def pcVariaance(sc: SparkContext, labeledPointTrainRdd: RDD[LabeledPoint]) {
@@ -168,13 +168,14 @@ object AnomalyDetection {
   def saveModels(sc: SparkContext, labeledPointTrainRdd: RDD[LabeledPoint]) {
     
     val numPc = 30
-    val projTrainPoints = AdvUtil.getProjPointsAndPcMatrix(labeledPointTrainRdd.map(_.features), numPc)._1
-    val pcMatrix = AdvUtil.getProjPointsAndPcMatrix(labeledPointTrainRdd.map(_.features), numPc)._2
+    
+    val pcMatrix = AdvUtil.getPcMatrix(labeledPointTrainRdd.map(_.features), numPc)
+    val projTrainPoints = AdvUtil.getProjPoints(labeledPointTrainRdd.map(_.features), pcMatrix)
     projTrainPoints.cache()
 
     sc.parallelize(Array(pcMatrix)).saveAsObjectFile(pcFile.format(numPc))
 
-  }
+  }  
   
   def saveKMeansModel(sc: SparkContext, projTrainPoints: RDD[Vector], numClusters: Int){
 
@@ -197,7 +198,7 @@ object AnomalyDetection {
       kmSqDistList(clusterIndex) += sqDist
     }
 
-    val kmWriter = new PrintWriter(new File(kmModelClusterFile.format(numClusters)))
+    val kmWriter = new PrintWriter(new File(kmModelClusterStatFile.format(numClusters)))
 
     for (i <- 0 to numClusters - 1) {
       val mean = kmSqDistList(i).sum / kmSqDistList(i).size
@@ -232,7 +233,7 @@ object AnomalyDetection {
       bkmSqDistList(clusterIndex) += sqDist
     }
 
-    val bkmWriter = new PrintWriter(new File(bkmModelClusterFile.format(numClusters)))
+    val bkmWriter = new PrintWriter(new File(bkmModelClusterStatFile.format(numClusters)))
 
     for (i <- 0 to numClusters - 1) {
       val mean = bkmSqDistList(i).sum / bkmSqDistList(i).size
@@ -267,7 +268,7 @@ object AnomalyDetection {
       gmSqDistList(clusterIndex) += sqDist
     }
 
-    val gmWriter = new PrintWriter(new File(gmModelClusterFile.format(numClusters)))
+    val gmWriter = new PrintWriter(new File(gmModelClusterStatFile.format(numClusters)))
 
     for (i <- 0 to numClusters - 1) {
       val mean = gmSqDistList(i).sum / gmSqDistList(i).size
@@ -281,13 +282,14 @@ object AnomalyDetection {
 
     gmWriter.close()
   }
+  
 
   def kMeansAnomalyDetectionResult(sc: SparkContext, labeledPointTestRdd: RDD[LabeledPoint], numClusters: Int, numPc: Int) {
 
     val kmModel = KMeansModel.load(sc, kmModelDir.format(numClusters))
     val pcMatrix = sc.objectFile[DenseMatrix](pcFile.format(numPc)).collect()(0)
 
-    val clusterInfoArray: Array[ClusterInfo] = getClusterInfoArray(sc, kmModelClusterFile.format(numClusters)) 
+    val clusterInfoArray: Array[ClusterInfo] = getClusterInfoArray(sc, kmModelClusterStatFile.format(numClusters)) 
 
     var TP = 0
     var FP = 0
@@ -351,7 +353,7 @@ object AnomalyDetection {
     val bkmModel = BisectingKMeansModel.load(sc, bkmModelDir.format(numClusters))
     val pcMatrix = sc.objectFile[DenseMatrix](pcFile.format(numPc)).collect()(0)
 
-    val clusterInfoArray: Array[ClusterInfo] = getClusterInfoArray(sc, bkmModelClusterFile.format(numClusters))
+    val clusterInfoArray: Array[ClusterInfo] = getClusterInfoArray(sc, bkmModelClusterStatFile.format(numClusters))
 
     var TP = 0
     var FP = 0
@@ -415,7 +417,7 @@ object AnomalyDetection {
     val gmModel = GaussianMixtureModel.load(sc, gmModelDir.format(numClusters))
     val pcMatrix = sc.objectFile[DenseMatrix](pcFile.format(numPc)).collect()(0)
 
-    val clusterInfoArray: Array[ClusterInfo] = getClusterInfoArray(sc, gmModelClusterFile.format(numClusters)) 
+    val clusterInfoArray: Array[ClusterInfo] = getClusterInfoArray(sc, gmModelClusterStatFile.format(numClusters)) 
 
     var TP = 0
     var FP = 0

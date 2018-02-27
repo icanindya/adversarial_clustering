@@ -94,7 +94,7 @@ object EvasionAttack {
   }
   
   def saveClusterOpt(sc: SparkContext){
-    for (attrChangePercentage <- 12 to 20 by 2) {
+    for (attrChangePercentage <- 2 to 20 by 2) {
       saveKmClusterOpt(sc, 10, NUM_PC, attrChangePercentage.toDouble)
       saveBkmClusterOpt(sc, 10, NUM_PC, attrChangePercentage.toDouble)
 //      saveGmClusterOpt(sc, 24, NUM_PC, attrChangePercentage.toDouble)

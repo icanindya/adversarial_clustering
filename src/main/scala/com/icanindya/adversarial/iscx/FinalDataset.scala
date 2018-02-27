@@ -7,10 +7,10 @@ import org.apache.spark.mllib.linalg.Vectors
 import com.icanindya.adversarial.Spark
 
 object FinalDataset {
-  val joinedDsFile = "D:/Data/ISCX IDS/joined/%d" //.format(int)
+  val joinedDsFile = "D:/Data/ISCX_IDS/joined/%d" //.format(int)
 
-  val finalTrainFile = "D:/Data/ISCX IDS/final/train"
-  val finalTestFile = "D:/Data/ISCX IDS/final/test"
+  val finalTrainFile = "D:/Data/ISCX_IDS/final/train"
+  val finalTestFile = "D:/Data/ISCX_IDS/final/test"
 
   def main(args: Array[String]): Unit = {
     val sc = Spark.getContext()
